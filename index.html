@@ -3,172 +3,295 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BPETV - Budapest Roleplay TV</title>
+    <title>Bp Európa Televízió Budapest online TV adás - Budapest Európa Televízió online</title>
     <style>
-        * { box-sizing: border-box; }
         body {
-            background-color: #0f0f11;
-            color: #efefef;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            font-family: Arial, Helvetica, sans-serif;
             margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
+            padding: 0;
         }
-        .main-container {
-            width: 100%;
-            max-width: 960px;
-            background: #18181c;
-            border: 1px solid #2a2a30;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        
+        .page-container {
+            width: 980px;
+            margin: 0 auto;
+            background-color: #111111;
+            border: 1px solid #333;
         }
-        .header {
-            background: linear-gradient(90deg, #8b0000 0%, #cc0000 100%);
-            padding: 15px 20px;
+
+        /* Top Dental Promo Banner - Exact Replica */
+        .top-banner {
+            background-color: #ffff00;
+            color: #cc0000;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 15px;
+            border-bottom: 2px solid #cc0000;
+        }
+        .top-banner span {
+            color: #000000;
+        }
+
+        /* Header Info Bar */
+        .info-bar {
+            background-color: #222222;
+            color: #cccccc;
+            padding: 6px 12px;
+            font-size: 12px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            border-bottom: 1px solid #444;
         }
-        .header h1 {
-            margin: 0;
-            font-size: 22px;
-            letter-spacing: 1px;
-            color: #fff;
-            text-transform: uppercase;
-            font-weight: 800;
-        }
-        .header .badge {
-            background: #000;
-            color: #ff3333;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 12px;
-            font-weight: bold;
-            border: 1px solid #ff3333;
-        }
-        .tv-wrapper {
+
+        /* Main Logo Header Area */
+        .header-logo-area {
+            background: linear-gradient(180deg, #1a0000 0%, #4a0000 100%);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #880000;
             position: relative;
-            width: 100%;
-            background: #000;
-            aspect-ratio: 16 / 9;
         }
-        /* Video & Canvas Elements */
-        #tvPlayer, #staticCanvas {
+        
+        /* Exact BPE TV Styled Logo */
+        .bpetv-official-logo {
+            display: inline-block;
+            font-family: 'Arial Black', Impact, sans-serif;
+            font-size: 42px;
+            font-weight: 900;
+            font-style: italic;
+            letter-spacing: -1px;
+            color: #ffffff;
+            text-shadow: 3px 3px 0px #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            background: #990000;
+            padding: 10px 25px;
+            border: 3px solid #ffffff;
+            border-radius: 6px;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
+        }
+        .bpetv-official-logo .yellow-text {
+            color: #ffff00;
+        }
+        .bpetv-subtext {
+            color: #ffffff;
+            font-size: 14px;
+            margin-top: 8px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Classic Menu Bar */
+        .menu-bar {
+            background-color: #880000;
+            overflow: hidden;
+            border-bottom: 2px solid #550000;
+        }
+        .menu-bar a {
+            float: left;
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 10px 14px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            border-right: 1px solid #aa2222;
+        }
+        .menu-bar a:hover {
+            background-color: #bb0000;
+        }
+
+        /* Main Content & Player */
+        .content-area {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .video-container {
+            position: relative;
+            width: 800px;
+            height: 450px;
+            margin: 0 auto;
+            background-color: #000000;
+            border: 2px solid #444444;
+            box-shadow: 0 0 20px rgba(0,0,0,0.9);
+            overflow: hidden;
+        }
+
+        /* Canvas for Static Noise */
+        #staticCanvas {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            object-fit: cover;
         }
-        /* TV Logo Overlay */
-        .tv-logo {
+
+        /* Video element for MP4 shows */
+        #tvPlayer {
             position: absolute;
-            top: 20px; right: 25px;
-            font-family: 'Impact', sans-serif;
-            font-size: 28px;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: none;
+        }
+
+        /* Corner Logo Overlay inside player */
+        .player-corner-logo {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-family: 'Arial Black', Impact, sans-serif;
+            font-size: 20px;
+            font-weight: bold;
+            font-style: italic;
             color: rgba(255, 255, 255, 0.85);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(255,0,0,0.5);
+            background: rgba(150, 0, 0, 0.75);
+            padding: 4px 10px;
+            border: 1px solid rgba(255,255,255,0.8);
+            border-radius: 4px;
             pointer-events: none;
             z-index: 10;
-            user-select: none;
+            text-shadow: 1px 1px 2px #000;
         }
-        .tv-logo span { color: #ff3333; }
-        .controls {
-            padding: 15px 20px;
-            background: #141417;
-            border-top: 1px solid #26262b;
+        .player-corner-logo span {
+            color: #ffff00;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            margin-top: 15px;
+            background-color: #222;
+            padding: 12px;
+            border: 1px solid #444;
             display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
         }
         .btn {
-            background: #2b2b36;
-            color: #fff;
-            border: 1px solid #3d3d4d;
+            background-color: #880000;
+            color: white;
+            border: 1px solid #ff4444;
             padding: 8px 16px;
-            border-radius: 4px;
+            font-weight: bold;
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s;
+            border-radius: 3px;
         }
-        .btn:hover { background: #3b3b4a; }
-        .btn-danger { background: #a00; border-color: #c00; }
-        .btn-danger:hover { background: #c00; }
-        .info-panel {
-            padding: 20px;
-            font-size: 14px;
-            color: #aaa;
-            line-height: 1.6;
+        .btn:hover {
+            background-color: #aa0000;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #050505;
+            color: #777777;
+            font-size: 11px;
+            text-align: center;
+            padding: 15px;
+            border-top: 1px solid #222;
         }
     </style>
 </head>
 <body>
 
-<div class="main-container">
-    <div class="header">
-        <h1>Budapest Európa TV <span>(RP)</span></h1>
-        <div class="badge">ÉLŐ ADÁS / AUTOHOST</div>
+<div class="page-container">
+
+    <!-- Fog-Ász Banner -->
+    <div class="top-banner">
+        Fogászati akció, részletfizetés, nyugdíjasoknak rendkívüli árkedvezmény! <br>
+        <span>Fog-Ász, bejelentkezés: 06-70-589-5466</span>
     </div>
 
-    <div class="tv-wrapper">
-        <!-- Generált Statikus Zaj Zúgással (ha nincs video) -->
-        <canvas id="staticCanvas"></canvas>
-
-        <!-- MP4 Lejátszó műsorokhoz -->
-        <video id="tvPlayer" style="display:none;" controls></video>
-
-        <!-- BPE TV Beégetett Logó -->
-        <div class="tv-logo">BP<span>ETV</span></div>
+    <!-- Header Info -->
+    <div class="info-bar">
+        <div>1089. Orczy út 44-46/b. Telefon-és faxszám: (+36-1) 210-0649</div>
+        <div>BP EURÓPA TELEVÍZIÓ Budapest</div>
     </div>
 
-    <div class="controls">
-        <button class="btn btn-danger" onclick="toggleNoiseSound()">🔊 Zúgás Be/Ki</button>
-        <button class="btn" onclick="playShow('musor1.mp4')">▶ Műsor Indítása (Teszt MP4)</button>
-        <button class="btn" onclick="stopShow()">⏹ Műsor Leállítása (Zaj Vissza)</button>
+    <!-- Official Header with BPETV Logo -->
+    <div class="header-logo-area">
+        <div class="bpetv-official-logo">
+            BP <span class="yellow-text">EURÓPA</span> TV
+        </div>
+        <div class="bpetv-subtext">Budapest Online Televízió Adás</div>
     </div>
 
-    <div class="info-panel">
-        <strong>Budapest Roleplay TV Frakció:</strong> Ha nincs betöltve konkrét műsor videó (MP4), a rendszer automatikusan a BPETV klasszikus statikus adászaját és a logót vetíti.
+    <!-- Menu Bar -->
+    <div class="menu-bar">
+        <a href="#">Főoldal</a>
+        <a href="#">Műsorajánló</a>
+        <a href="#">Mai műsor</a>
+        <a href="#">Heti műsor</a>
+        <a href="#">Műsorvezetők</a>
+        <a href="#">Képgaléria</a>
+        <a href="#">Archívum</a>
+        <a href="#">YouTube</a>
     </div>
+
+    <!-- Main Content -->
+    <div class="content-area">
+        <h3 style="color: #ff3333; margin-top: 0;">Bp Európa Televízió Budapest online TV adás</h3>
+        
+        <div class="video-container">
+            <!-- Canvas for noise generator -->
+            <canvas id="staticCanvas"></canvas>
+            
+            <!-- Video player for actual show files -->
+            <video id="tvPlayer" controls></video>
+
+            <!-- BPETV Corner Watermark Logo -->
+            <div class="player-corner-logo">
+                BP <span>EURÓPA</span> TV
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <button class="btn" onclick="toggleNoiseSound()">🔊 Zúgás Be / Ki</button>
+            <button class="btn" onclick="playShow('musor.mp4')">▶ Műsor Indítása (musor.mp4)</button>
+            <button class="btn" onclick="stopShow()">⏹ Műsor Leállítása (Zaj Vissza)</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        Adatvédelmi nyilatkozat | Impresszum <br><br>
+        MCOnet 2001-2026. - Minden jog fenntartva - Copyright - www.mconet.hu
+    </div>
+
 </div>
 
 <script>
-    // Canvas & Web Audio API-s Statikus Zaj Generátor (Nem kell hozzá külső fájl!)
     const canvas = document.getElementById('staticCanvas');
     const ctx = canvas.getContext('2d');
     let audioCtx, noiseNode, gainNode;
     let isNoiseSoundOn = false;
 
     function resizeCanvas() {
-        canvas.width = 640;
-        canvas.height = 360;
+        canvas.width = 800;
+        canvas.height = 450;
     }
     resizeCanvas();
 
-    // Zaj rajzolása a vászonra (TV hangyásodás)
+    // Exact noise generator algorithm
     function generateNoise() {
         const imgData = ctx.createImageData(canvas.width, canvas.height);
         const buffer = new Uint32Array(imgData.data.buffer);
         const len = buffer.length;
         for (let i = 0; i < len; i++) {
-            if (Math.random() < 0.1) { // Fekete-fehér és pirosas BPETV beütés
-                buffer[i] = 0xff0000ff; // Piros villanás
+            if (Math.random() < 0.02) {
+                buffer[i] = 0xff0000ff; // Red TV noise trace
             } else {
                 const gray = Math.floor(Math.random() * 255);
                 buffer[i] = (255 << 24) | (gray << 16) | (gray << 8) | gray;
             }
         }
         ctx.putImageData(imgData, 0, 0);
-        if (document.getElementById('tvPlayer').style.display === 'none') {
+        if (document.getElementById('tvPlayer').style.display !== 'block') {
             requestAnimationFrame(generateNoise);
         }
     }
     generateNoise();
 
-    // Statikus Zúgás Hang Generátor
+    // Audio noise generator (Static sound)
     function toggleNoiseSound() {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -184,7 +307,7 @@
             noiseNode.loop = true;
 
             gainNode = audioCtx.createGain();
-            gainNode.gain.value = 0.05; // Halk statikus zúgás
+            gainNode.gain.value = 0.04;
 
             noiseNode.connect(gainNode);
             gainNode.connect(audioCtx.destination);
@@ -194,12 +317,11 @@
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
-            gainNode.gain.value = isNoiseSoundOn ? 0 : 0.05;
+            gainNode.gain.value = isNoiseSoundOn ? 0 : 0.04;
             isNoiseSoundOn = !isNoiseSoundOn;
         }
     }
 
-    // MP4 Műsor Lejátszása
     function playShow(src) {
         const player = document.getElementById('tvPlayer');
         canvas.style.display = 'none';
@@ -209,15 +331,15 @@
         if (gainNode) gainNode.gain.value = 0;
     }
 
-    // Vissza a statikus zúgásra
     function stopShow() {
         const player = document.getElementById('tvPlayer');
         player.pause();
         player.style.display = 'none';
         canvas.style.display = 'block';
         generateNoise();
-        if (isNoiseSoundOn && gainNode) gainNode.gain.value = 0.05;
+        if (isNoiseSoundOn && gainNode) gainNode.gain.value = 0.04;
     }
 </script>
+
 </body>
 </html>
