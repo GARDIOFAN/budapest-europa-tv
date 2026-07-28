@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPETV - Budapest Roleplay TV</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background-color: #0f0f11;
+            color: #efefef;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .main-container {
+            width: 100%;
+            max-width: 960px;
+            background: #18181c;
+            border: 1px solid #2a2a30;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        }
+        .header {
+            background: linear-gradient(90deg, #8b0000 0%, #cc0000 100%);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+            letter-spacing: 1px;
+            color: #fff;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+        .header .badge {
+            background: #000;
+            color: #ff3333;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            font-weight: bold;
+            border: 1px solid #ff3333;
+        }
+        .tv-wrapper {
+            position: relative;
+            width: 100%;
+            background: #000;
+            aspect-ratio: 16 / 9;
+        }
+        /* Video & Canvas Elements */
+        #tvPlayer, #staticCanvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+        }
+        /* TV Logo Overlay */
+        .tv-logo {
+            position: absolute;
+            top: 20px; right: 25px;
+            font-family: 'Impact', sans-serif;
+            font-size: 28px;
+            color: rgba(255, 255, 255, 0.85);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(255,0,0,0.5);
+            pointer-events: none;
+            z-index: 10;
+            user-select: none;
+        }
+        .tv-logo span { color: #ff3333; }
+        .controls {
+            padding: 15px 20px;
+            background: #141417;
+            border-top: 1px solid #26262b;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: #2b2b36;
+            color: #fff;
+            border: 1px solid #3d3d4d;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn:hover { background: #3b3b4a; }
+        .btn-danger { background: #a00; border-color: #c00; }
+        .btn-danger:hover { background: #c00; }
+        .info-panel {
+            padding: 20px;
+            font-size: 14px;
+            color: #aaa;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="header">
+        <h1>Budapest Európa TV <span>(RP)</span></h1>
+        <div class="badge">ÉLŐ ADÁS / AUTOHOST</div>
+    </div>
+
+    <div class="tv-wrapper">
+        <!-- Generált Statikus Zaj Zúgással (ha nincs video) -->
+        <canvas id="staticCanvas"></canvas>
+
+        <!-- MP4 Lejátszó műsorokhoz -->
+        <video id="tvPlayer" style="display:none;" controls></video>
+
+        <!-- BPE TV Beégetett Logó -->
+        <div class="tv-logo">BP<span>ETV</span></div>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-danger" onclick="toggleNoiseSound()">🔊 Zúgás Be/Ki</button>
+        <button class="btn" onclick="playShow('musor1.mp4')">▶ Műsor Indítása (Teszt MP4)</button>
+        <button class="btn" onclick="stopShow()">⏹ Műsor Leállítása (Zaj Vissza)</button>
+    </div>
+
+    <div class="info-panel">
+        <strong>Budapest Roleplay TV Frakció:</strong> Ha nincs betöltve konkrét műsor videó (MP4), a rendszer automatikusan a BPETV klasszikus statikus adászaját és a logót vetíti.
+    </div>
+</div>
+
+<script>
+    // Canvas & Web Audio API-s Statikus Zaj Generátor (Nem kell hozzá külső fájl!)
+    const canvas = document.getElementById('staticCanvas');
+    const ctx = canvas.getContext('2d');
+    let audioCtx, noiseNode, gainNode;
+    let isNoiseSoundOn = false;
+
+    function resizeCanvas() {
+        canvas.width = 640;
+        canvas.height = 360;
+    }
+    resizeCanvas();
+
+    // Zaj rajzolása a vászonra (TV hangyásodás)
+    function generateNoise() {
+        const imgData = ctx.createImageData(canvas.width, canvas.height);
+        const buffer = new Uint32Array(imgData.data.buffer);
+        const len = buffer.length;
+        for (let i = 0; i < len; i++) {
+            if (Math.random() < 0.1) { // Fekete-fehér és pirosas BPETV beütés
+                buffer[i] = 0xff0000ff; // Piros villanás
+            } else {
+                const gray = Math.floor(Math.random() * 255);
+                buffer[i] = (255 << 24) | (gray << 16) | (gray << 8) | gray;
+            }
+        }
+        ctx.putImageData(imgData, 0, 0);
+        if (document.getElementById('tvPlayer').style.display === 'none') {
+            requestAnimationFrame(generateNoise);
+        }
+    }
+    generateNoise();
+
+    // Statikus Zúgás Hang Generátor
+    function toggleNoiseSound() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const bufferSize = audioCtx.sampleRate * 2;
+            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+
+            noiseNode = audioCtx.createBufferSource();
+            noiseNode.buffer = noiseBuffer;
+            noiseNode.loop = true;
+
+            gainNode = audioCtx.createGain();
+            gainNode.gain.value = 0.05; // Halk statikus zúgás
+
+            noiseNode.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            noiseNode.start();
+            isNoiseSoundOn = true;
+        } else {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            gainNode.gain.value = isNoiseSoundOn ? 0 : 0.05;
+            isNoiseSoundOn = !isNoiseSoundOn;
+        }
+    }
+
+    // MP4 Műsor Lejátszása
+    function playShow(src) {
+        const player = document.getElementById('tvPlayer');
+        canvas.style.display = 'none';
+        player.style.display = 'block';
+        player.src = src;
+        player.play();
+        if (gainNode) gainNode.gain.value = 0;
+    }
+
+    // Vissza a statikus zúgásra
+    function stopShow() {
+        const player = document.getElementById('tvPlayer');
+        player.pause();
+        player.style.display = 'none';
+        canvas.style.display = 'block';
+        generateNoise();
+        if (isNoiseSoundOn && gainNode) gainNode.gain.value = 0.05;
+    }
+</script>
+</body>
+</html>
