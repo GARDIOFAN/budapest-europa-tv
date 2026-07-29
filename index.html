@@ -109,7 +109,7 @@
             overflow: hidden;
         }
 
-        #staticCanvas {
+        #idleCanvas {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
@@ -120,30 +120,6 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             display: none;
-        }
-
-        .no-signal-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(136, 0, 0, 0.85);
-            color: #ffffff;
-            padding: 15px 30px;
-            border: 2px solid #ffff00;
-            font-size: 22px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            text-shadow: 2px 2px 4px #000;
-            animation: pulse 1.5s infinite alternate;
-            pointer-events: none;
-            z-index: 5;
-            box-shadow: 0 0 15px rgba(255, 255, 0, 0.5);
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.6; transform: translate(-50%, -50%) scale(0.98); }
-            100% { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
         }
 
         .player-corner-logo-img {
@@ -167,28 +143,6 @@
             border-radius: 6px;
             color: #888;
             font-size: 16px;
-        }
-
-        .audio-start-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 20;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            cursor: pointer;
-        }
-        .audio-start-btn {
-            background: #880000;
-            color: #fff;
-            border: 2px solid #fff;
-            padding: 15px 30px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 5px;
-            box-shadow: 0 0 15px rgba(255,0,0,0.8);
         }
 
         .footer {
@@ -227,18 +181,8 @@
             <h3 style="color: #ff3333; margin-top: 0;">Bp Európa Televízió Budapest online TV adás</h3>
             
             <div class="video-container">
-                <div id="startOverlay" class="audio-start-overlay" onclick="startAudioAndStream()">
-                    <div class="audio-start-btn">▶ KATTINTS A TV ADÁS INDÍTÁSÁHOZ</div>
-                </div>
-
-                <canvas id="staticCanvas"></canvas>
-                
-                <div id="noSignalOverlay" class="no-signal-overlay">
-                    ⚠ JELENLEG NINCS SUGÁRZÁS
-                </div>
-
-                <video id="tvPlayer" playsinline></video>
-
+                <canvas id="idleCanvas" width="800" height="450"></canvas>
+                <video id="tvPlayer" playsinline muted autoplay></video>
                 <img src="logo.png" alt="BPETV Logo" class="player-corner-logo-img">
             </div>
         </div>
@@ -260,68 +204,148 @@
 </div>
 
 <script>
-    const canvas = document.getElementById('staticCanvas');
+    const canvas = document.getElementById('idleCanvas');
     const ctx = canvas.getContext('2d');
     const player = document.getElementById('tvPlayer');
-    const noSignalOverlay = document.getElementById('noSignalOverlay');
-    const startOverlay = document.getElementById('startOverlay');
 
-    let audioCtx, noiseNode, gainNode;
     let isLiveActive = false;
 
-    function resizeCanvas() {
-        canvas.width = 800;
-        canvas.height = 450;
-    }
-    resizeCanvas();
+    function drawPM5544() {
+        if (isLiveActive) return;
 
-    function generateNoise() {
-        const imgData = ctx.createImageData(canvas.width, canvas.height);
-        const buffer = new Uint32Array(imgData.data.buffer);
-        const len = buffer.length;
-        for (let i = 0; i < len; i++) {
-            if (Math.random() < 0.02) {
-                buffer[i] = 0xff0000ff;
-            } else {
-                const gray = Math.floor(Math.random() * 255);
-                buffer[i] = (255 << 24) | (gray << 16) | (gray << 8) | gray;
-            }
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const radius = 210;
+
+        ctx.fillStyle = "#666666";
+        ctx.fillRect(0, 0, w, h);
+
+        const cols = 16;
+        const rows = 12;
+        const cw = w / cols;
+        const ch = h / rows;
+
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 1;
+
+        for (let i = 0; i <= cols; i++) {
+            ctx.beginPath();
+            ctx.moveTo(i * cw, 0);
+            ctx.lineTo(i * cw, h);
+            ctx.stroke();
         }
-        ctx.putImageData(imgData, 0, 0);
-        if (!isLiveActive) {
-            requestAnimationFrame(generateNoise);
+        for (let j = 0; j <= rows; j++) {
+            ctx.beginPath();
+            ctx.moveTo(0, j * ch);
+            ctx.lineTo(w, j * ch);
+            ctx.stroke();
         }
-    }
-    generateNoise();
 
-    function initContinuousSound() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const bufferSize = audioCtx.sampleRate * 2;
-            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const output = noiseBuffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                output[i] = Math.random() * 2 - 1;
-            }
-
-            noiseNode = audioCtx.createBufferSource();
-            noiseNode.buffer = noiseBuffer;
-            noiseNode.loop = true;
-
-            gainNode = audioCtx.createGain();
-            gainNode.gain.value = 0.05;
-
-            noiseNode.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            noiseNode.start();
+        for (let i = 0; i < cols; i++) {
+            ctx.fillStyle = (i % 2 === 0) ? "#ffffff" : "#000000";
+            ctx.fillRect(i * cw, 0, cw, 12);
+            ctx.fillRect(i * cw, h - 12, cw, 12);
         }
-    }
+        for (let j = 0; j < rows; j++) {
+            ctx.fillStyle = (j % 2 === 0) ? "#ffffff" : "#000000";
+            ctx.fillRect(0, j * ch, 12, ch);
+            ctx.fillRect(w - 12, j * ch, 12, ch);
+        }
 
-    function startAudioAndStream() {
-        startOverlay.style.display = 'none';
-        initContinuousSound();
-        checkLiveFeed();
-        setInterval(checkLiveFeed, 10000);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.clip();
+
+        ctx.fillStyle = "#888888";
+        ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
+
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(cx - radius, cy - 170, radius * 2, 40);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(cx - radius, cy - 130, radius * 2, 20);
+
+        const colors = ["#ffff00", "#00ffff", "#00ff00", "#ff00ff", "#ff0000", "#0000ff"];
+        const barW = (radius * 2) / colors.length;
+        for (let i = 0; i < colors.length; i++) {
+            ctx.fillStyle = colors[i];
+            ctx.fillRect(cx - radius + (i * barW), cy - 110, barW, 60);
+        }
+
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(cx - radius, cy - 50, radius * 2, 100);
+
+        const grays = ["#ffffff", "#cccccc", "#999999", "#666666", "#333333", "#000000"];
+        const grayW = (radius * 2) / grays.length;
+        for (let i = 0; i < grays.length; i++) {
+            ctx.fillStyle = grays[i];
+            ctx.fillRect(cx - radius + (i * grayW), cy + 50, grayW, 50);
+        }
+
+        ctx.fillStyle = "#ff0000";
+        ctx.fillRect(cx - 20, cy + 100, 40, 70);
+        ctx.fillStyle = "#ffff00";
+        ctx.fillRect(cx - radius, cy + 100, radius - 20, 70);
+        ctx.fillRect(cx + 20, cy + 100, radius - 20, 70);
+
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(cx - 100, cy - 160, 200, 32);
+        ctx.strokeStyle = "#ffffff";
+        ctx.strokeRect(cx - 100, cy - 160, 200, 32);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 16px 'Courier New', monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("BP EURÓPA TV", cx, cy - 138);
+
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(cx - 100, cy + 120, 200, 32);
+        ctx.strokeRect(cx - 100, cy + 120, 200, 32);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 16px 'Courier New', monospace";
+        ctx.fillText("BUDAPEST", cx, cy + 142);
+
+        const now = new Date();
+        const yy = String(now.getFullYear()).slice(-2);
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const dateStr = `${yy}-${mm}-${dd}`;
+
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        const timeStr = `${hh}:${min}:${ss}`;
+
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(cx - 140, cy - 15, 110, 30);
+        ctx.strokeRect(cx - 140, cy - 15, 110, 30);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 15px 'Courier New', monospace";
+        ctx.fillText(dateStr, cx - 85, cy + 5);
+
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(cx + 30, cy - 15, 110, 30);
+        ctx.strokeRect(cx + 30, cy - 15, 110, 30);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 15px 'Courier New', monospace";
+        ctx.fillText(timeStr, cx + 85, cy + 5);
+
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(cx - 10, cy - 25, 8, 50);
+        ctx.fillRect(cx + 2, cy - 25, 8, 50);
+
+        ctx.restore();
+
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        requestAnimationFrame(drawPM5544);
     }
 
     function checkLiveFeed() {
@@ -343,14 +367,20 @@
     function startLiveShow(src) {
         isLiveActive = true;
         canvas.style.display = 'none';
-        noSignalOverlay.style.display = 'none';
         player.style.display = 'block';
         if (player.src !== window.location.href + src) {
             player.src = src;
         }
         player.controls = true;
-        player.play();
-        if (gainNode) gainNode.gain.value = 0;
+        player.muted = false;
+        
+        let playPromise = player.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                player.muted = true;
+                player.play();
+            });
+        }
     }
 
     function switchToFallback() {
@@ -358,10 +388,13 @@
         player.pause();
         player.style.display = 'none';
         canvas.style.display = 'block';
-        noSignalOverlay.style.display = 'block';
-        generateNoise();
-        if (gainNode) gainNode.gain.value = 0.05;
+        drawPM5544();
     }
+
+    checkLiveFeed();
+    setInterval(checkLiveFeed, 5000);
+
+    drawPM5544();
 
     function switchTab(tabId, btn) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
